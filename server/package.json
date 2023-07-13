@@ -6,6 +6,7 @@
   "scripts": {
     "watch": "tsc -w",
     "dev": "npx nodemon dist/index.js",
+    "create:migration": "npx mikro-orm migration:create",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -24,6 +25,7 @@
     "@mikro-orm/migrations": "^5.7.12",
     "@mikro-orm/postgresql": "^5.7.12",
     "apollo-server-express": "^3.12.0",
+    "argon2": "^0.30.3",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "graphql": "^16.7.1",

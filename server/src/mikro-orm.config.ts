@@ -3,6 +3,7 @@ import { Post } from "./entities/Post";
 import { MikroORM } from "@mikro-orm/core";
 import path from "path";
 import dotenv from "dotenv";
+import { User } from "./entities/User";
 
 dotenv.config();
 
@@ -11,7 +12,7 @@ export default {
     path: path.join(__dirname, "./migrations"),
     glob: "!(*.d).{js,ts}",
   },
-  entities: [Post],
+  entities: [Post, User],
   dbName: "lireddit",
   user: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
