@@ -13,6 +13,7 @@ import RedisStore from "connect-redis";
 import session from "express-session";
 import { createClient } from "redis";
 import { MyContext } from "./types";
+import cors from "cors";
 
 
 const main = async () => {
@@ -21,9 +22,10 @@ const main = async () => {
   const emFork = orm.em.fork();
 
   const app = express();
-  app.set("trust proxy", true);
-  app.set("Access-Control-Allow-Origin", "https://studio.apollographql.com");
-  app.set("Access-Control-Allow-Credentials", true);
+  app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+  }));
 
   const redisClient = createClient();
   redisClient.connect().catch(console.error);
@@ -41,8 +43,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
         httpOnly: true, // prevent front end to access
-        secure: true, // cookie only works in https
-        sameSite: "none", // csrf
+        secure: __prod__, // cookie only works in https
+        sameSite: "lax", // csrf
       },
     })
   );
@@ -55,11 +57,7 @@ const main = async () => {
     context: ({ req, res }): MyContext => ({ em: emFork, req, res }),
   });
   await apolloServer.start();
-  const cors = {
-    credentials: true,
-    origin: "https://studio.apollographql.com",
-  };
-  apolloServer.applyMiddleware({ app, cors });
+  apolloServer.applyMiddleware({ app, cors: false });
 
   app.listen(4000, () => {
     console.log("server started in localhost 4000");

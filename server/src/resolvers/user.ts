@@ -88,8 +88,8 @@ export class UserResolver {
         return {
           errors: [
             {
-              field: "user",
-              message: "User already exist",
+              field: "username",
+              message: "user already exist",
             },
           ],
         };
