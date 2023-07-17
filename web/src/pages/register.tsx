@@ -12,11 +12,8 @@ import { useMutation } from "urql";
 type Props = {};
 
 const registerMutation = graphql(`
-mutation Register($username: String!, $password: String!) {
-  register(options: {
-    username: $username,
-    password: $password
-  }){
+mutation Register($options: UsernamePasswordInput!) {
+  register(options: $options){
     user{
       id,
       username
@@ -34,9 +31,9 @@ const Register = (props: Props) => {
   return (
     <Wrapper variant="small">
       <Formik
-        initialValues={{ username: "", password: "" }}
+        initialValues={{ username: "", email: "", password: "" }}
         onSubmit={async (values, {setErrors}) => {
-          const response = await register(values)
+          const response = await register({options: values})
           if(response.data?.register.errors) {
             setErrors(toErrorMap(response.data.register.errors))
           } else {
@@ -52,6 +49,14 @@ const Register = (props: Props) => {
               placeholder="username"
               label="Username"
             />
+            <Box mt={4}>
+              <InputField
+                name="email"
+                placeholder="email"
+                label="Email"
+                type="email"
+              />
+            </Box>
             <Box mt={4}>
               <InputField
                 name="password"

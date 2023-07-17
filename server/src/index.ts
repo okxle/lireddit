@@ -18,8 +18,8 @@ import cors from "cors";
 
 const main = async () => {
   const orm = await MikroORM.init(mikroOrmConfig);
-  await orm.getMigrator().up();
   const emFork = orm.em.fork();
+  await orm.getMigrator().up();
 
   const app = express();
   // app.set("trust proxy", true);
@@ -28,7 +28,7 @@ const main = async () => {
   app.use(cors({
     origin: "http://localhost:3000",
     // origin: "https://studio.apollographql.com",
-    credentials: true
+    credentials: true 
   }));
 
   const redisClient = createClient();
