@@ -22,8 +22,12 @@ const main = async () => {
   const emFork = orm.em.fork();
 
   const app = express();
+  // app.set("trust proxy", true);
+  // app.set("Access-Control-Allow-Origin", "https://studio.apollographql.com");
+  // app.set("Access-Control-Allow-Credentials", true);
   app.use(cors({
     origin: "http://localhost:3000",
+    // origin: "https://studio.apollographql.com",
     credentials: true
   }));
 

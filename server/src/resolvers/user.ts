@@ -40,11 +40,11 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
-  @Query(() => UserResponse, { nullable: true })
+  @Query(() => User, { nullable: true })
   async me(@Ctx() { em, req }: MyContext) {
     if (req.session.userId) {
       const user = await em.findOne(User, { id: req.session.userId });
-      return { user };
+      return user;
     }
     return null;
   }
@@ -65,7 +65,7 @@ export class UserResolver {
       };
     }
 
-    if (options.password.length <= 3) {
+    if (options.password.length <= 2) {
       return {
         errors: [
           {
@@ -136,5 +136,12 @@ export class UserResolver {
     return {
       user,
     };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: MyContext) {
+    req.session.destroy(() => {})
+    res.clearCookie("qid")
+    return true
   }
 }

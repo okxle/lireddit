@@ -4,43 +4,42 @@ import { graphql } from "@/generated/gql";
 import { createUrlClient } from "@/utils/createUrlClient";
 import { toErrorMap } from "@/utils/toErrorMap";
 import { Box, Button } from "@chakra-ui/react";
-import { Form, Formik } from "formik";
+import { Formik, Form } from "formik";
 import { withUrqlClient } from "next-urql";
 import { useRouter } from "next/router";
+import React from "react";
 import { useMutation } from "urql";
 
 type Props = {};
 
-const registerMutation = graphql(`
-mutation Register($username: String!, $password: String!) {
-  register(options: {
-    username: $username,
-    password: $password
-  }){
-    user{
-      id,
-      username
-    }
-    errors {
-      field
-      message
+const loginMutation = graphql(`
+  mutation Login($username: String!, $password: String!) {
+    login(options: { username: $username, password: $password }) {
+      errors {
+        field
+        message
+      }
+      user {
+        id
+        username
+      }
     }
   }
-}`)
+`);
 
-const Register = (props: Props) => {
+const Login = (props: Props) => {
   const router = useRouter();
-  const [, register] = useMutation(registerMutation);
+  const [, login] = useMutation(loginMutation);
   return (
     <Wrapper variant="small">
       <Formik
         initialValues={{ username: "", password: "" }}
-        onSubmit={async (values, {setErrors}) => {
-          const response = await register(values)
-          if(response.data?.register.errors) {
-            setErrors(toErrorMap(response.data.register.errors))
+        onSubmit={async (values, { setErrors }) => {
+          const response = await login(values);
+          if (response.data?.login.errors) {
+            setErrors(toErrorMap(response.data.login.errors));
           } else {
-            router.push("/")
+            router.push("/");
           }
           return response;
         }}
@@ -66,7 +65,7 @@ const Register = (props: Props) => {
               type="submit"
               colorScheme="teal"
             >
-              Register
+              Login
             </Button>
           </Form>
         )}
@@ -75,4 +74,4 @@ const Register = (props: Props) => {
   );
 };
 
-export default withUrqlClient(createUrlClient)(Register);
+export default withUrqlClient(createUrlClient)(Login);
