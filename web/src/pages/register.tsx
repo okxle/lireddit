@@ -1,7 +1,7 @@
 import InputField from "@/components/InputField";
 import Wrapper from "@/components/Wrapper";
 import { graphql } from "@/generated/gql";
-import { createUrlClient } from "@/utils/createUrlClient";
+import { createUqrlClient } from "@/utils/createUqrlClient";
 import { toErrorMap } from "@/utils/toErrorMap";
 import { Box, Button } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
@@ -80,4 +80,4 @@ const Register = (props: Props) => {
   );
 };
 
-export default withUrqlClient(createUrlClient)(Register);
+export default withUrqlClient(createUqrlClient)(Register);

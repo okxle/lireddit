@@ -11,7 +11,7 @@ import { PostResolver } from "./resolvers/post";
 import { UserResolver } from "./resolvers/user";
 import RedisStore from "connect-redis";
 import session from "express-session";
-import { createClient } from "redis";
+import Redis from "ioredis";
 import { MyContext } from "./types";
 import cors from "cors";
 
@@ -31,8 +31,7 @@ const main = async () => {
     credentials: true 
   }));
 
-  const redisClient = createClient();
-  redisClient.connect().catch(console.error);
+  const redisClient = new Redis();
   const redisStore = new RedisStore({
     client: redisClient,
     disableTouch: true,
@@ -58,7 +57,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({ em: emFork, req, res }),
+    context: ({ req, res }): MyContext => ({ em: emFork, req, res, redis: redisClient }),
   });
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: false });

@@ -12,7 +12,7 @@ import {
 } from "@/generated/graphql";
 import { betterUpdateQuery } from "@/utils/betterUpdateQuery";
 
-export const createUrlClient = (ssrExchange: any) => ({
+export const createUqrlClient = (ssrExchange: any) => ({
   url: "http://localhost:4000/graphql",
   exchanges: [
     cacheExchangeURL({

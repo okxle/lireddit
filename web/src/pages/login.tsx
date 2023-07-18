@@ -1,9 +1,10 @@
 import InputField from "@/components/InputField";
 import Wrapper from "@/components/Wrapper";
 import { graphql } from "@/generated/gql";
-import { createUrlClient } from "@/utils/createUrlClient";
+import { createUqrlClient } from "@/utils/createUqrlClient";
 import { toErrorMap } from "@/utils/toErrorMap";
-import { Box, Button } from "@chakra-ui/react";
+import { Link } from "@chakra-ui/next-js";
+import { Flex, Box, Button } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
 import { withUrqlClient } from "next-urql";
 import { useRouter } from "next/router";
@@ -59,6 +60,9 @@ const Login = (props: Props) => {
                 type="password"
               />
             </Box>
+            <Flex mt={2}>
+              <Link ml="auto" href="/forgot-password">forgot password?</Link>
+            </Flex>
             <Button
               mt={4}
               isLoading={isSubmitting}
@@ -74,4 +78,4 @@ const Login = (props: Props) => {
   );
 };
 
-export default withUrqlClient(createUrlClient)(Login);
+export default withUrqlClient(createUqrlClient)(Login);

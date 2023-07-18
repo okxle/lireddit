@@ -1,7 +1,7 @@
 "useclient"
 import Navbar from "@/components/Navbar";
 import { graphql } from "@/generated";
-import { createUrlClient } from "@/utils/createUrlClient";
+import { createUqrlClient } from "@/utils/createUqrlClient";
 import { Container } from "@chakra-ui/react";
 import { NextPageContext } from "next";
 import { initUrqlClient, withUrqlClient } from "next-urql";
@@ -23,7 +23,7 @@ type Props = {
 
 export async function getServerSideProps(context:  NextPageContext) {  
   const ssrCache = ssrExchange({ isClient: false });
-  const client = initUrqlClient(createUrlClient(ssrCache), false);
+  const client = initUrqlClient(createUqrlClient(ssrCache), false);
   await client.query(postsQuery, {}).toPromise();
 
   return {
@@ -51,4 +51,4 @@ function Home() {
   );
 }
 
-export default withUrqlClient(createUrlClient)(Home);
+export default withUrqlClient(createUqrlClient)(Home);
