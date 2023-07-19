@@ -1,8 +1,5 @@
 import "reflect-metadata";
-import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
-// import { Post } from "./entities/Post";
-import mikroOrmConfig from "./mikro-orm.config";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -15,21 +12,41 @@ import Redis from "ioredis";
 import { MyContext } from "./types";
 import cors from "cors";
 
+import { DataSource } from "typeorm";
+import { Post } from "./entities/Post";
+import { User } from "./entities/User";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const main = async () => {
-  const orm = await MikroORM.init(mikroOrmConfig);
-  const emFork = orm.em.fork();
-  await orm.getMigrator().up();
+  const appDataSource = new DataSource({
+    type: "postgres",
+    port: 5432,
+    host: process.env.POSTGRES_HOST,
+    username: process.env.POSTGRES_USERNAME,
+    password: process.env.POSTGRES_PASSWORD,
+    database: process.env.POSTGRES_DATABASE,
+    synchronize: true,
+    logging: true,
+    entities: [User, Post],
+    subscribers: [],
+    migrations: [],
+  });
+
+  await appDataSource.initialize().catch((error) => console.log(error));
 
   const app = express();
   // app.set("trust proxy", true);
   // app.set("Access-Control-Allow-Origin", "https://studio.apollographql.com");
   // app.set("Access-Control-Allow-Credentials", true);
-  app.use(cors({
-    origin: "http://localhost:3000",
-    // origin: "https://studio.apollographql.com",
-    credentials: true 
-  }));
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      // origin: "https://studio.apollographql.com",
+      credentials: true,
+    })
+  );
 
   const redisClient = new Redis();
   const redisStore = new RedisStore({
@@ -57,7 +74,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({ em: emFork, req, res, redis: redisClient }),
+    context: ({ req, res }): MyContext => ({ req, res, redis: redisClient }),
   });
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: false });

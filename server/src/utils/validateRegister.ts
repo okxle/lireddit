@@ -1,11 +1,7 @@
-import { EntityManager, IDatabaseDriver, Connection } from "@mikro-orm/core";
 import { User } from "../entities/User";
 import { UsernamePasswordInput } from "../resolvers/UsernamePasswordInput";
 
-export const validateRegister = async (
-  options: UsernamePasswordInput,
-  em: EntityManager<IDatabaseDriver<Connection>>
-) => {
+export const validateRegister = async (options: UsernamePasswordInput) => {
   if (options.username.length <= 2) {
     return [
       {
@@ -42,8 +38,8 @@ export const validateRegister = async (
     ];
   }
 
-  const existingUsername = await em.findOne(User, {
-    username: options.username,
+  const existingUsername = await User.findOne({
+    where: { username: options.username },
   });
   if (existingUsername) {
     return [
@@ -54,7 +50,7 @@ export const validateRegister = async (
     ];
   }
 
-  const existingEmail = await em.findOne(User, { email: options.email });
+  const existingEmail = await User.findOne({ where: { email: options.email } });
   if (existingEmail) {
     return [
       {
