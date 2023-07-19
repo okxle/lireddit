@@ -18,6 +18,7 @@ import { User } from "./entities/User";
 import dotenv from "dotenv";
 
 dotenv.config();
+const isApolloSandBoxMode = false; // toggle this so can use in sandbox
 
 const main = async () => {
   const appDataSource = new DataSource({
@@ -37,13 +38,22 @@ const main = async () => {
   await appDataSource.initialize().catch((error) => console.log(error));
 
   const app = express();
-  // app.set("trust proxy", true);
-  // app.set("Access-Control-Allow-Origin", "https://studio.apollographql.com");
-  // app.set("Access-Control-Allow-Credentials", true);
+
+  let corsOrigin = "http://localhost:3000";
+  let cookieSecure = __prod__; 
+  let cookieSameSite: "lax" | "none" = "lax";
+  if (isApolloSandBoxMode) {
+    corsOrigin = "https://studio.apollographql.com"
+    cookieSecure = true;
+    cookieSameSite = "none";
+    app.set("trust proxy", true);
+    app.set("Access-Control-Allow-Origin", corsOrigin);
+    app.set("Access-Control-Allow-Credentials", true);
+  }
+  
   app.use(
     cors({
-      origin: "http://localhost:3000",
-      // origin: "https://studio.apollographql.com",
+      origin: corsOrigin,
       credentials: true,
     })
   );
@@ -63,8 +73,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
         httpOnly: true, // prevent front end to access
-        secure: __prod__, // cookie only works in https
-        sameSite: "lax", // csrf
+        secure: cookieSecure, // cookie only works in https
+        sameSite: cookieSameSite, // csrf
       },
     })
   );
