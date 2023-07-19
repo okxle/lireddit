@@ -1,16 +1,17 @@
-import {fetchExchange } from "urql";
 import {
-  cacheExchange as cacheExchangeURL,
-} from "@urql/exchange-graphcache";
-import { devtoolsExchange } from "@urql/devtools";
-import {
-  MeDocument,
-  MeQuery,
   LoginMutation,
   LogoutMutation,
+  MeDocument,
+  MeQuery,
   RegisterMutation,
 } from "@/generated/graphql";
 import { betterUpdateQuery } from "@/utils/betterUpdateQuery";
+import { devtoolsExchange } from "@urql/devtools";
+import {
+  cacheExchange as cacheExchangeURL,
+} from "@urql/exchange-graphcache";
+import Router  from "next/router";
+import { errorExchange, fetchExchange } from "urql";
 
 export const createUqrlClient = (ssrExchange: any) => ({
   url: "http://localhost:4000/graphql",
@@ -56,6 +57,14 @@ export const createUqrlClient = (ssrExchange: any) => ({
             );
           },
         },
+      },
+    }),
+    errorExchange({
+      onError(error) {
+        console.log(error)
+        if (error?.message.includes("not authenticated")) {
+          Router.replace("/login");
+        }
       },
     }),
     ssrExchange,

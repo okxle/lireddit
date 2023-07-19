@@ -39,6 +39,8 @@ const Login = (props: Props) => {
           const response = await login(values);
           if (response.data?.login.errors) {
             setErrors(toErrorMap(response.data.login.errors));
+          } else if (typeof router.query.next === "string") {
+            router.push(router.query.next);
           } else {
             router.push("/");
           }
@@ -61,7 +63,9 @@ const Login = (props: Props) => {
               />
             </Box>
             <Flex mt={2}>
-              <Link ml="auto" href="/forgot-password">forgot password?</Link>
+              <Link ml="auto" href="/forgot-password">
+                forgot password?
+              </Link>
             </Flex>
             <Button
               mt={4}

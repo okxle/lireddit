@@ -12,7 +12,7 @@ import React, { useState } from "react";
 import { useMutation } from "urql";
 
 type Props = {
-  token: string;
+  // token: string;
 };
 
 const changePasswordMutation = graphql(`
@@ -30,16 +30,16 @@ const changePasswordMutation = graphql(`
   }
 `);
 
-export async function getServerSideProps(context: NextPageContext) {
-  const { token } = context.query;
-  return {
-    props: {
-      token,
-    },
-  };
-}
+// export async function getServerSideProps(context: NextPageContext) {
+//   const { token } = context.query;
+//   return {
+//     props: {
+//       token,
+//     },
+//   };
+// }
 
-const ChangePassword: NextPage<Props> = ({ token }: Props) => {
+const ChangePassword: NextPage<Props> = () => {
   const router = useRouter();
   const [, changePassword] = useMutation(changePasswordMutation);
   const [tokenError, setTokenError] = useState("");
@@ -50,7 +50,7 @@ const ChangePassword: NextPage<Props> = ({ token }: Props) => {
         initialValues={{ newPassword: "" }}
         onSubmit={async (values, { setErrors }) => {
           const response = await changePassword({
-            token,
+            token: typeof router.query.token === "string" ? router.query.token : "",
             newPassword: values.newPassword,
           });
           if (response.data?.changePassword.errors) {
