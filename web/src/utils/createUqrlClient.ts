@@ -16,6 +16,7 @@ import { errorExchange, fetchExchange } from "urql";
 export const createUqrlClient = (ssrExchange: any) => ({
   url: "http://localhost:4000/graphql",
   exchanges: [
+    devtoolsExchange,
     cacheExchangeURL({
       updates: {
         Mutation: {
@@ -69,7 +70,6 @@ export const createUqrlClient = (ssrExchange: any) => ({
     }),
     ssrExchange,
     fetchExchange,
-    devtoolsExchange,
   ],
   fetchOptions: {
     credentials: "include" as const,

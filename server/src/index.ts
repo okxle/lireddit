@@ -11,30 +11,11 @@ import session from "express-session";
 import Redis from "ioredis";
 import { MyContext } from "./types";
 import cors from "cors";
+import { appDataSource } from "./appDataSource";
 
-import { DataSource } from "typeorm";
-import { Post } from "./entities/Post";
-import { User } from "./entities/User";
-import dotenv from "dotenv";
-
-dotenv.config();
 const isApolloSandBoxMode = false; // toggle this so can use in sandbox
 
 const main = async () => {
-  const appDataSource = new DataSource({
-    type: "postgres",
-    port: 5432,
-    host: process.env.POSTGRES_HOST,
-    username: process.env.POSTGRES_USERNAME,
-    password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DATABASE,
-    synchronize: true,
-    logging: true,
-    entities: [User, Post],
-    subscribers: [],
-    migrations: [],
-  });
-
   await appDataSource.initialize().catch((error) => console.log(error));
 
   const app = express();

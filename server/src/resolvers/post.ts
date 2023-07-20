@@ -9,8 +9,10 @@ import {
   Field,
   Ctx,
   UseMiddleware,
+  Int,
 } from "type-graphql";
 import { isAuth } from "../middleware/isAuth";
+import { appDataSource } from "../appDataSource";
 
 @InputType()
 class PostInput {
@@ -24,8 +26,21 @@ class PostInput {
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  posts(): Promise<Post[]> {
-    return Post.find();
+  posts(
+    @Arg("limit", () => Int) limit: number,
+    @Arg("cursor", () => String, {nullable: true}) cursor: string | null
+  ): Promise<Post[]> {
+    console.log(limit, cursor);
+    const realLimit = Math.min(limit, 50);
+    const queryBuilder = appDataSource
+      .getRepository(Post)
+      .createQueryBuilder("p") // alias
+      .orderBy('"createdAt"', "DESC")
+      .take(realLimit)
+    if (cursor) {
+      queryBuilder.where('"createdAt" < :cursor', { cursor: new Date(cursor) })
+    }
+    return queryBuilder.getMany();
   }
 
   @Query(() => Post, { nullable: true })
