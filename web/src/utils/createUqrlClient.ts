@@ -19,6 +19,9 @@ export const createUqrlClient = (ssrExchange: any) => ({
   exchanges: [
     devtoolsExchange,
     cacheExchangeURL({
+      keys : {
+        PaginatedPosts: () => null
+      },
       resolvers: {
         Query: {
           posts: cursorPagination()
@@ -42,7 +45,6 @@ export const createUqrlClient = (ssrExchange: any) => ({
             );
           },
           register: (_result, args, cache, info) => {
-            console.log({ _result, args, cache, info });
             betterUpdateQuery<RegisterMutation, MeQuery>(
               cache,
               { query: MeDocument },

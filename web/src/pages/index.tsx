@@ -11,11 +11,14 @@ import { ssrExchange, useQuery } from "urql";
 const postsQuery = graphql(`
   query Post($limit: Int!, $cursor: String){
     posts(limit: $limit, cursor: $cursor){
-      id,
-      createdAt,
-      updatedAt,
-      title,
-      textSnippet
+      hasMore,
+      posts { 
+        id,
+        createdAt,
+        updatedAt,
+        title,
+        textSnippet
+      }
     }
   }
 `);
@@ -26,7 +29,7 @@ const limit = 10;
 export async function getServerSideProps(context: NextPageContext) {
   const ssrCache = ssrExchange({ isClient: false });
   const client = initUrqlClient(createUqrlClient(ssrCache), false);
-  await client.query(postsQuery, {cursor: "", limit}).toPromise();
+  await client.query(postsQuery, {cursor: null, limit}).toPromise();
   return {
     props: {
       urqlState: ssrCache.extractData(),
@@ -56,7 +59,7 @@ function Home() {
       {!data && fetching ? (
         <div>loading...</div>
       ) : (
-        data!.posts.map((d) => (
+        data!.posts.posts.map((d) => (
           <Box key={d.id} p={5} shadow='md' borderWidth='1px'>
           <Heading fontSize='xl'>{d.title}</Heading>
           <Text mt={4}>{d.textSnippet}</Text>
@@ -64,10 +67,10 @@ function Home() {
         ))
       )}
       </Stack>
-      {data && <Flex>
+      {data && data.posts.hasMore && <Flex>
         <Button onClick={() => {
           setVariables({
-            cursor: data.posts[data.posts.length - 1].createdAt,
+            cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
             limit: variables.limit
           })
         }} isLoading={fetching} mx="auto" my={8}>Load More</Button>
