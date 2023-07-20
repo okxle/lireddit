@@ -12,12 +12,18 @@ import {
 } from "@urql/exchange-graphcache";
 import Router  from "next/router";
 import { errorExchange, fetchExchange } from "urql";
+import { cursorPagination } from "./cursorPagination";
 
 export const createUqrlClient = (ssrExchange: any) => ({
   url: "http://localhost:4000/graphql",
   exchanges: [
     devtoolsExchange,
     cacheExchangeURL({
+      resolvers: {
+        Query: {
+          posts: cursorPagination()
+        }
+      },
       updates: {
         Mutation: {
           login: (_result: any, args, cache, info) => {

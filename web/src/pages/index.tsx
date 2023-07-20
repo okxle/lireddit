@@ -1,19 +1,21 @@
-"useclient";
 import Layout from "@/components/Layout";
 import { graphql } from "@/generated";
 import { createUqrlClient } from "@/utils/createUqrlClient";
 import { Link } from "@chakra-ui/next-js";
+import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 import { NextPageContext } from "next";
 import { initUrqlClient, withUrqlClient } from "next-urql";
+import { useState } from "react";
 import { ssrExchange, useQuery } from "urql";
 
 const postsQuery = graphql(`
-  query Post($limit: Int!, $cursor: String!){
+  query Post($limit: Int!, $cursor: String){
     posts(limit: $limit, cursor: $cursor){
       id,
       createdAt,
       updatedAt,
-      title
+      title,
+      textSnippet
     }
   }
 `);
@@ -33,22 +35,43 @@ export async function getServerSideProps(context: NextPageContext) {
 }
 
 function Home() {
-  const [{ data }] = useQuery({ 
+  const [variables, setVariables] = useState({limit, cursor: null as null | string});
+  const [{ data, fetching }] = useQuery({ 
     query: postsQuery, 
-    variables: {
-      cursor: "",
-      limit
-    }
+    variables
   });
+
+  if (!fetching && !data){
+     return <>You got no post for some reason</>
+  }
+
   return (
     <Layout>
-      <Link href="/create-post">Create post</Link>
-      <hr />
-      {!data ? (
+      <Flex align="end">
+        <Heading>LiReddit</Heading>
+        <Link ml="auto" href="/create-post">Create post</Link>
+      </Flex>
+      <br />
+      <Stack spacing={8}>
+      {!data && fetching ? (
         <div>loading...</div>
       ) : (
-        data.posts.map((d) => <div key={d.id}>{d.title}</div>)
+        data!.posts.map((d) => (
+          <Box key={d.id} p={5} shadow='md' borderWidth='1px'>
+          <Heading fontSize='xl'>{d.title}</Heading>
+          <Text mt={4}>{d.textSnippet}</Text>
+          </Box>
+        ))
       )}
+      </Stack>
+      {data && <Flex>
+        <Button onClick={() => {
+          setVariables({
+            cursor: data.posts[data.posts.length - 1].createdAt,
+            limit: variables.limit
+          })
+        }} isLoading={fetching} mx="auto" my={8}>Load More</Button>
+      </Flex>}
     </Layout>
   );
 }

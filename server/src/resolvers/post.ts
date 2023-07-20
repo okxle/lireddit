@@ -1,18 +1,20 @@
 import { MyContext } from "src/types";
-import { Post } from "../entities/Post";
 import {
-  Resolver,
-  Query,
   Arg,
-  Mutation,
-  InputType,
-  Field,
   Ctx,
-  UseMiddleware,
+  Field,
+  FieldResolver,
+  InputType,
   Int,
+  Mutation,
+  Query,
+  Resolver,
+  Root,
+  UseMiddleware,
 } from "type-graphql";
-import { isAuth } from "../middleware/isAuth";
 import { appDataSource } from "../appDataSource";
+import { Post } from "../entities/Post";
+import { isAuth } from "../middleware/isAuth";
 
 @InputType()
 class PostInput {
@@ -23,12 +25,17 @@ class PostInput {
   text: string;
 }
 
-@Resolver()
+@Resolver(Post)
 export class PostResolver {
+  @FieldResolver(() => String)
+  textSnippet(@Root() root: Post) {
+    return root.text.slice(0, 50);
+  }
+
   @Query(() => [Post])
   posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, {nullable: true}) cursor: string | null
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<Post[]> {
     console.log(limit, cursor);
     const realLimit = Math.min(limit, 50);
@@ -36,9 +43,9 @@ export class PostResolver {
       .getRepository(Post)
       .createQueryBuilder("p") // alias
       .orderBy('"createdAt"', "DESC")
-      .take(realLimit)
+      .take(realLimit);
     if (cursor) {
-      queryBuilder.where('"createdAt" < :cursor', { cursor: new Date(cursor) })
+      queryBuilder.where('"createdAt" < :cursor', { cursor: new Date(cursor) });
     }
     return queryBuilder.getMany();
   }
