@@ -45,6 +45,7 @@ export class PostResolver {
     @Ctx() { req }: MyContext) {
     const isUpdoot = value !== -1;
     const realValue = isUpdoot ? 1 : -1;
+    console.log(value, realValue)
     const { userId } = req.session;
     
     await appDataSource.query(`
