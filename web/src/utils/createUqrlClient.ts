@@ -19,16 +19,27 @@ export const createUqrlClient = (ssrExchange: any) => ({
   exchanges: [
     devtoolsExchange,
     cacheExchangeURL({
-      keys : {
-        PaginatedPosts: () => null
+      keys: {
+        PaginatedPosts: () => null,
       },
       resolvers: {
         Query: {
-          posts: cursorPagination()
-        }
+          posts: cursorPagination(),
+        },
       },
       updates: {
         Mutation: {
+          createPost: (_result: any, args, cache, info) => {
+            // console.log(cache.inspectFields("Query"))
+            const allFields = cache.inspectFields("Query");
+            const fieldInfos = allFields.filter(
+              (info) => info.fieldName === "posts"
+            );
+            fieldInfos.forEach((fieldInfo) => {
+              cache.invalidate("Query", "posts", fieldInfo.arguments || {});
+            });
+            // console.log(cache.inspectFields("Query"))
+          },
           login: (_result: any, args, cache, info) => {
             // cache.updateQuery({query: MeDocument}, (query) => {
             //   if (_result.login.errors) return query;
@@ -70,7 +81,7 @@ export const createUqrlClient = (ssrExchange: any) => ({
     }),
     errorExchange({
       onError(error) {
-        console.log(error)
+        console.log(error);
         if (error?.message.includes("not authenticated")) {
           Router.replace("/login");
         }

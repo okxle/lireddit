@@ -17,7 +17,11 @@ const postsQuery = graphql(`
         createdAt,
         updatedAt,
         title,
-        textSnippet
+        textSnippet,
+        creator {
+          id,
+          username
+        }
       }
     }
   }
@@ -62,6 +66,7 @@ function Home() {
         data!.posts.posts.map((d) => (
           <Box key={d.id} p={5} shadow='md' borderWidth='1px'>
           <Heading fontSize='xl'>{d.title}</Heading>
+          <Text>posted by {d.creator.username}</Text>
           <Text mt={4}>{d.textSnippet}</Text>
           </Box>
         ))
