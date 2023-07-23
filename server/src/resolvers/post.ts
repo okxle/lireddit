@@ -45,19 +45,52 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
+    // @Info() info: any // pass info to build query based on that info 
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(limit, 50);
     const realLimitPlusOne = realLimit + 1;
-    const queryBuilder = appDataSource
-      .getRepository(Post)
-      .createQueryBuilder("p") // alias
-      .orderBy('"createdAt"', "DESC")
-      .take(realLimitPlusOne);
-    if (cursor) {
-      queryBuilder.where('"createdAt" < :cursor', { cursor: new Date(cursor) });
+    const posts = await appDataSource.query(`
+    select
+      p.*,
+      json_build_object(
+        'id', u.id,
+        'username', u.username,
+        'email', u.email
+      ) creator 
+    from
+      "post" as p
+    inner join "user" as u
+    on
+      p."creatorId" = u.id
+    ${
+      cursor &&
+      `
+    where 
+      p."createdAt" < '${cursor}'
+      `
     }
-    const posts = await queryBuilder.getMany();
+    order by
+      p."createdAt" desc
+    limit ${realLimitPlusOne}
+    `);
+
+    // const queryBuilder = appDataSource
+    //   .getRepository(Post)
+    //   .createQueryBuilder("p") // alias
+    //   .innerJoinAndSelect(
+    //     "p.creator",
+    //     "u",
+    //     `u.id = p."creatorId"`,
+    //   )
+    //   // .orderBy('p."createdAt"', "DESC")
+    //   .take(realLimitPlusOne);
+    // console.log("hehehehe")
+    // if (cursor) {
+    //   queryBuilder.where('p."createdAt" < :cursor', { cursor: new Date(cursor) });
+    // }
+    // const posts = await queryBuilder.getMany();
+    
     return {
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,
