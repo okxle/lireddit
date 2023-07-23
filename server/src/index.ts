@@ -13,7 +13,7 @@ import { MyContext } from "./types";
 import cors from "cors";
 import { appDataSource } from "./appDataSource";
 
-const isApolloSandBoxMode = true; // toggle this so can use in sandbox
+const isApolloSandBoxMode = false; // toggle this so can use in sandbox
 
 const main = async () => {
   await appDataSource.initialize().catch((error) => console.log(error));

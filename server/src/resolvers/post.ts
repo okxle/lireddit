@@ -37,6 +37,42 @@ class PaginatedPosts {
 
 @Resolver(Post)
 export class PostResolver {
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg("postId", () => Int) postId: number, 
+    @Arg("value", () => Int) value: number, 
+    @Ctx() { req }: MyContext) {
+    const isUpdoot = value !== -1;
+    const realValue = isUpdoot ? 1 : -1;
+    const { userId } = req.session;
+    
+    await appDataSource.query(`
+    start transaction;
+    insert into Updoot 
+    ("userId", "postId", value)
+    values (${userId}, ${postId}, ${realValue});
+    update Post
+    set points = points + ${realValue}
+    where id = ${postId};
+    commit;
+    `)
+    
+    // await Updoot.insert({
+    //   userId,
+    //   postId,
+    //   value: realValue
+    // });
+
+    // await appDataSource.query(`
+    // update Post
+    // set points = points + $1
+    // where id = $2
+    // `, [realValue, postId])
+    
+    return true;
+  }
+
   @FieldResolver(() => String)
   textSnippet(@Root() root: Post) {
     return root.text.slice(0, 50);
@@ -45,11 +81,12 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
-    // @Info() info: any // pass info to build query based on that info 
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+    // @Info() info: any // pass info to build query based on that info
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(limit, 50);
     const realLimitPlusOne = realLimit + 1;
+    console.log(cursor)
     const posts = await appDataSource.query(`
     select
       p.*,
@@ -64,11 +101,11 @@ export class PostResolver {
     on
       p."creatorId" = u.id
     ${
-      cursor &&
+      cursor ?
       `
     where 
       p."createdAt" < '${cursor}'
-      `
+      `: ''
     }
     order by
       p."createdAt" desc
@@ -90,7 +127,7 @@ export class PostResolver {
     //   queryBuilder.where('p."createdAt" < :cursor', { cursor: new Date(cursor) });
     // }
     // const posts = await queryBuilder.getMany();
-    
+
     return {
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,

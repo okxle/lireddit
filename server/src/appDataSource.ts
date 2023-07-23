@@ -1,6 +1,7 @@
 import { DataSource } from "typeorm";
 import { Post } from "./entities/Post";
 import { User } from "./entities/User";
+import { Updoot } from "./entities/Updoot";
 import path from "path";
 
 import dotenv from "dotenv";
@@ -15,7 +16,7 @@ export const appDataSource = new DataSource({
   database: process.env.POSTGRES_DATABASE,
   synchronize: true,
   logging: true,
-  entities: [User, Post],
+  entities: [User, Post, Updoot],
   subscribers: [],
   migrations: [path.join(__dirname, "./migrations/*")],
 });
