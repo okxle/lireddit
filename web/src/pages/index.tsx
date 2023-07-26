@@ -29,6 +29,7 @@ const postsQuery = graphql(`
         title
         textSnippet
         points
+        voteStatus
         creator {
           id
           username
@@ -41,16 +42,16 @@ const postsQuery = graphql(`
 type Props = {};
 const limit = 10;
 
-export async function getServerSideProps(context: NextPageContext) {
-  const ssrCache = ssrExchange({ isClient: false });
-  const client = initUrqlClient(createUqrlClient(ssrCache), false);
-  await client.query(postsQuery, { cursor: null, limit }).toPromise();
-  return {
-    props: {
-      urqlState: ssrCache.extractData(),
-    },
-  };
-}
+// export async function getServerSideProps(context: NextPageContext) {
+//   const ssrCache = ssrExchange({ isClient: false });
+//   const client = initUrqlClient(createUqrlClient(ssrCache, context), false);
+//   await client.query(postsQuery, { cursor: null, limit }).toPromise();
+//   return {
+//     props: {
+//       urqlState: ssrCache.extractData(),
+//     },
+//   };
+// }
 
 function Home() {
   const [variables, setVariables] = useState({
@@ -112,4 +113,4 @@ function Home() {
   );
 }
 
-export default withUrqlClient(createUqrlClient)(Home);
+export default withUrqlClient(createUqrlClient, {ssr: true})(Home);

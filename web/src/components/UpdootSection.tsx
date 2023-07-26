@@ -26,24 +26,28 @@ const UpdootSection = ({ post }: Props) => {
         aria-label="updoot post"
         icon={<ChevronUpIcon />}
         onClick={async () => {
+          if (post.voteStatus === 1) return;
           setLoading("updoot-loading");
           await vote({ value: 1, postId: post.id });
           setLoading("not-loading");
         }}
         isLoading={loading === "updoot-loading"}
         boxSize="24px"
+        colorScheme={post.voteStatus === 1 ? "green" : undefined}
       />
       {post.points}
       <IconButton
         aria-label="downdoot post"
         icon={<ChevronDownIcon />}
         onClick={async () => {
+          if (post.voteStatus === -1) return;
           setLoading("downdoot-loading");
           await vote({ value: -1, postId: post.id });
           setLoading("not-loading");
         }}
         isLoading={loading === "downdoot-loading"}
         boxSize="24px"
+        colorScheme={post.voteStatus === -1 ? "red" : undefined}
       />
     </Flex>
   );

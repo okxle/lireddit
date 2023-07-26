@@ -16,6 +16,7 @@ import {
 import { appDataSource } from "../appDataSource";
 import { Post } from "../entities/Post";
 import { isAuth } from "../middleware/isAuth";
+import { Updoot } from "../entities/Updoot";
 
 @InputType()
 class PostInput {
@@ -40,25 +41,58 @@ export class PostResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async vote(
-    @Arg("postId", () => Int) postId: number, 
-    @Arg("value", () => Int) value: number, 
-    @Ctx() { req }: MyContext) {
+    @Arg("postId", () => Int) postId: number,
+    @Arg("value", () => Int) value: number,
+    @Ctx() { req }: MyContext
+  ) {
     const isUpdoot = value !== -1;
     const realValue = isUpdoot ? 1 : -1;
-    console.log(value, realValue)
     const { userId } = req.session;
-    
-    await appDataSource.query(`
-    start transaction;
-    insert into Updoot 
-    ("userId", "postId", value)
-    values (${userId}, ${postId}, ${realValue});
-    update Post
-    set points = points + ${realValue}
-    where id = ${postId};
-    commit;
-    `)
-    
+
+    const upDoot = await Updoot.findOneBy({ postId, userId });
+    if (upDoot && upDoot.value !== realValue) {
+      appDataSource.transaction(async (tm) => {
+        await tm.query(
+          `
+        update Updoot
+        set value = $1
+        where "postId" = $2 and "userId" = $3
+        `,
+          [realValue, postId, userId]
+        );
+
+        await tm.query(
+          `
+        update Post
+        set points = points + $1
+        where id = $2
+        `,
+          [2 * realValue, postId]
+        );
+      });
+    } else if (!upDoot) {
+      // another way to write transaction
+      appDataSource.transaction(async (tm) => {
+        await tm.query(
+          `
+        insert into Updoot 
+        ("userId", "postId", value)
+        values ($1, $2, $3)
+        `,
+          [userId, postId, realValue]
+        );
+
+        await tm.query(
+          `
+        update Post
+        set points = points + $1
+        where id = $2
+        `,
+          [realValue, postId]
+        );
+      });
+    }
+
     // await Updoot.insert({
     //   userId,
     //   postId,
@@ -70,7 +104,7 @@ export class PostResolver {
     // set points = points + $1
     // where id = $2
     // `, [realValue, postId])
-    
+
     return true;
   }
 
@@ -82,12 +116,11 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
-    // @Info() info: any // pass info to build query based on that info
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
+    @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(limit, 50);
     const realLimitPlusOne = realLimit + 1;
-    console.log(cursor)
     const posts = await appDataSource.query(`
     select
       p.*,
@@ -95,39 +128,35 @@ export class PostResolver {
         'id', u.id,
         'username', u.username,
         'email', u.email
-      ) creator 
+      ) creator,
+    ${
+      req.session.userId
+        ? `(
+          select 
+          value 
+          from updoot 
+          where "userId" = ${req.session.userId} 
+          and "postId" = p.id
+        ) "voteStatus"`
+        : 'null as "voteStatus"'
+    }
     from
       "post" as p
     inner join "user" as u
     on
       p."creatorId" = u.id
     ${
-      cursor ?
-      `
+      cursor
+        ? `
     where 
       p."createdAt" < '${cursor}'
-      `: ''
+      `
+        : ""
     }
     order by
       p."createdAt" desc
     limit ${realLimitPlusOne}
     `);
-
-    // const queryBuilder = appDataSource
-    //   .getRepository(Post)
-    //   .createQueryBuilder("p") // alias
-    //   .innerJoinAndSelect(
-    //     "p.creator",
-    //     "u",
-    //     `u.id = p."creatorId"`,
-    //   )
-    //   // .orderBy('p."createdAt"', "DESC")
-    //   .take(realLimitPlusOne);
-    // console.log("hehehehe")
-    // if (cursor) {
-    //   queryBuilder.where('p."createdAt" < :cursor', { cursor: new Date(cursor) });
-    // }
-    // const posts = await queryBuilder.getMany();
 
     return {
       posts: posts.slice(0, realLimit),
