@@ -19,7 +19,7 @@ import { useState } from "react";
 import { ssrExchange, useQuery } from "urql";
 
 const postsQuery = graphql(`
-  query Post($limit: Int!, $cursor: String) {
+  query Posts($limit: Int!, $cursor: String) {
     posts(limit: $limit, cursor: $cursor) {
       hasMore
       posts {
@@ -84,7 +84,9 @@ function Home() {
             <Flex key={d.id} p={5} shadow="md" borderWidth="1px">
               <UpdootSection post={d}/>
               <Box>
-                <Heading fontSize="xl">{d.title}</Heading>
+                <Link href={`/post/${d.id}`}>
+                  <Heading fontSize="xl">{d.title}</Heading>
+                </Link>
                 <Text>posted by {d.creator.username}</Text>
                 <Text mt={4}>{d.textSnippet}</Text>
               </Box>

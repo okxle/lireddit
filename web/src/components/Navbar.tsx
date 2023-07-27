@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Link } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, Link } from "@chakra-ui/react";
 import React from "react";
 import { graphql } from "@/generated";
 import { useMutation, useQuery } from "urql";
@@ -22,11 +22,10 @@ const logoutMutation = graphql(`
 type Props = {};
 
 const Navbar = (props: Props) => {
-  const [{ data, fetching }] = useQuery({ 
+  const [{ data, fetching }] = useQuery({
     query: meQuery,
   });
-  const [{fetching: logoutFetching}, logout] = useMutation(logoutMutation);
-  
+  const [{ fetching: logoutFetching }, logout] = useMutation(logoutMutation);
 
   let body;
   if (fetching) {
@@ -57,7 +56,10 @@ const Navbar = (props: Props) => {
   }
 
   return (
-    <Flex bg="tan" p={4} position="sticky" top={0} zIndex={10}>
+    <Flex bg="tan" p={4} position="sticky" top={0} zIndex={10} alignItems="center">
+      <Link href="/">
+        <Heading>LiReddit</Heading>
+      </Link>
       <Box ml="auto">{body}</Box>
     </Flex>
   );

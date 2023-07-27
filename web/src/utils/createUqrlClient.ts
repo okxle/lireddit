@@ -20,7 +20,7 @@ import isServer from "./isServer";
 
 export const createUqrlClient = (ssrExchange: any, ctx: any) => {
   let cookie = '';
-  if (ctx?.req.headers.cookie) {
+  if (isServer()) {
     cookie = ctx.req.headers.cookie;
   } 
   return {
