@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import UpdootSection from "@/components/UpdootSection";
 import { graphql } from "@/generated";
 import { createUqrlClient } from "@/utils/createUqrlClient";
-import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
+import { DeleteIcon } from "@chakra-ui/icons";
 import { Link } from "@chakra-ui/next-js";
 import {
   Box,
@@ -16,7 +16,7 @@ import {
 import { NextPageContext } from "next";
 import { initUrqlClient, withUrqlClient } from "next-urql";
 import { useState } from "react";
-import { ssrExchange, useQuery } from "urql";
+import { ssrExchange, useMutation, useQuery } from "urql";
 
 const postsQuery = graphql(`
   query Posts($limit: Int!, $cursor: String) {
@@ -36,6 +36,12 @@ const postsQuery = graphql(`
         }
       }
     }
+  }
+`);
+
+const deletePostMutation = graphql(`
+  mutation DeletePost($id: Int!) {
+    deletePost(id: $id)
   }
 `);
 
@@ -63,32 +69,35 @@ function Home() {
     variables,
   });
 
+  const [, deletePost] = useMutation(deletePostMutation)
+
   if (!fetching && !data) {
     return <>You got no post for some reason</>;
   }
 
   return (
     <Layout>
-      <Flex align="end">
-        <Heading>LiReddit</Heading>
-        <Link ml="auto" href="/create-post">
-          Create post
-        </Link>
-      </Flex>
-      <br />
       <Stack spacing={8}>
         {!data && fetching ? (
           <div>loading...</div>
         ) : (
-          data!.posts.posts.map((d) => (
+          data!.posts.posts.map((d) => !d ? null : (
             <Flex key={d.id} p={5} shadow="md" borderWidth="1px">
-              <UpdootSection post={d}/>
-              <Box>
+              <UpdootSection post={d} />
+              <Box flex={1}>
                 <Link href={`/post/${d.id}`}>
                   <Heading fontSize="xl">{d.title}</Heading>
                 </Link>
                 <Text>posted by {d.creator.username}</Text>
-                <Text mt={4}>{d.textSnippet}</Text>
+                <Flex align="center">
+                  <Text flex={1} mt={4}>{d.textSnippet}</Text>
+                  <IconButton
+                    colorScheme="red"
+                    icon={<DeleteIcon />}
+                    aria-label="delete post"
+                    onClick={() => deletePost({id: d.id})}
+                  />
+                </Flex>
               </Box>
             </Flex>
           ))
@@ -115,4 +124,4 @@ function Home() {
   );
 }
 
-export default withUrqlClient(createUqrlClient, {ssr: true})(Home);
+export default withUrqlClient(createUqrlClient, { ssr: true })(Home);

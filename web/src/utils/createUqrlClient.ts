@@ -1,4 +1,5 @@
 import {
+  DeletePostMutationVariables,
   LoginMutation,
   LogoutMutation,
   MeDocument,
@@ -42,6 +43,9 @@ export const createUqrlClient = (ssrExchange: any, ctx: any) => {
       },
       updates: {
         Mutation: {
+          deletePost : (_result: any, args, cache, info) => {
+            cache.invalidate({__typename: "Post", id: (args as DeletePostMutationVariables).id})
+          },
           vote: (_result: any, args, cache, info) => {
             const { postId, value } = args as VoteMutationVariables;
             const data = cache.readFragment<{ id: number; points?: number, voteStatus?: number }>(

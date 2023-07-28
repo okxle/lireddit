@@ -1,12 +1,12 @@
 import { graphql } from "@/generated";
-import { Post, PostQuery } from "@/generated/graphql";
+import { Post, PostsQuery } from "@/generated/graphql";
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { Flex, IconButton } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { useMutation } from "urql";
 
 type Props = {
-  post: PostQuery["posts"]["posts"][0];
+  post: PostsQuery["posts"]["posts"][0];
 };
 
 const voteMutation = graphql(`

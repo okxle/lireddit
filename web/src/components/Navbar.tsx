@@ -1,4 +1,5 @@
-import { Box, Button, Flex, Heading, Link } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading } from "@chakra-ui/react";
+import { Link } from "@chakra-ui/next-js";
 import React from "react";
 import { graphql } from "@/generated";
 import { useMutation, useQuery } from "urql";
@@ -41,6 +42,9 @@ const Navbar = (props: Props) => {
   } else {
     body = (
       <Flex align="center">
+        <Button as={Link} mr={4} href="/create-post">
+          Create post
+        </Button>
         <Box mr={2}>{data.me.username}</Box>
         <Button
           onClick={() => {
@@ -56,11 +60,13 @@ const Navbar = (props: Props) => {
   }
 
   return (
-    <Flex bg="tan" p={4} position="sticky" top={0} zIndex={10} alignItems="center">
-      <Link href="/">
-        <Heading>LiReddit</Heading>
-      </Link>
-      <Box ml="auto">{body}</Box>
+    <Flex bg="tan" p={4} position="sticky" top={0} zIndex={10}>
+      <Flex flex={1} maxW={800} m="auto">
+        <Link href="/">
+          <Heading>LiReddit</Heading>
+        </Link>
+        <Box ml="auto">{body}</Box>
+      </Flex>
     </Flex>
   );
 };
