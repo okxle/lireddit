@@ -20,9 +20,10 @@ const documents = {
     "\n  mutation CreatePost($input: PostInput!) {\n    createPost(input: $input) {\n      id\n      createdAt\n      updatedAt\n      title\n      text\n      points\n      creatorId\n    }\n  }\n": types.CreatePostDocument,
     "\n  mutation ForgotPassword($email: String!) {\n    forgotPassword(email: $email)\n  }\n": types.ForgotPasswordDocument,
     "\n  query Posts($limit: Int!, $cursor: String) {\n    posts(limit: $limit, cursor: $cursor) {\n      hasMore\n      posts {\n        id\n        createdAt\n        updatedAt\n        title\n        textSnippet\n        points\n        voteStatus\n        creator {\n          id\n          username\n        }\n      }\n    }\n  }\n": types.PostsDocument,
+    "\n  mutation DeletePost($id: Int!) {\n    deletePost(id: $id)\n  }\n": types.DeletePostDocument,
     "\n  mutation Login($usernameOrEmail: String!, $password: String!) {\n    login(usernameOrEmail: $usernameOrEmail, password: $password) {\n      errors {\n        field\n        message\n      }\n      user {\n        id\n        username\n      }\n    }\n  }\n": types.LoginDocument,
     "\n  query Post($id: Int!) {\n    post(id: $id) {\n      id\n      createdAt\n      updatedAt\n      title\n      points\n      text\n      voteStatus\n      creator {\n        id\n        username\n      }\n    }\n  }\n": types.PostDocument,
-    "\n  mutation DeletePost($id: Int!) {\n    deletePost(id: $id)\n  }\n": types.DeletePostDocument,
+    "\n  mutation UpdatePost($id: Int!, $title: String!, $text: String!) {\n    updatePost(id: $id, title: $title, text: $text) {\n      id\n      title\n      text\n      textSnippet\n    }\n  }\n": types.UpdatePostDocument,
     "\nmutation Register($options: UsernamePasswordInput!) {\n  register(options: $options){\n    user{\n      id,\n      username\n    }\n    errors {\n      field\n      message\n    }\n  }\n}": types.RegisterDocument,
 };
 
@@ -71,6 +72,10 @@ export function graphql(source: "\n  query Posts($limit: Int!, $cursor: String) 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  mutation DeletePost($id: Int!) {\n    deletePost(id: $id)\n  }\n"): (typeof documents)["\n  mutation DeletePost($id: Int!) {\n    deletePost(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation Login($usernameOrEmail: String!, $password: String!) {\n    login(usernameOrEmail: $usernameOrEmail, password: $password) {\n      errors {\n        field\n        message\n      }\n      user {\n        id\n        username\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation Login($usernameOrEmail: String!, $password: String!) {\n    login(usernameOrEmail: $usernameOrEmail, password: $password) {\n      errors {\n        field\n        message\n      }\n      user {\n        id\n        username\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -79,7 +84,7 @@ export function graphql(source: "\n  query Post($id: Int!) {\n    post(id: $id) 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation DeletePost($id: Int!) {\n    deletePost(id: $id)\n  }\n"): (typeof documents)["\n  mutation DeletePost($id: Int!) {\n    deletePost(id: $id)\n  }\n"];
+export function graphql(source: "\n  mutation UpdatePost($id: Int!, $title: String!, $text: String!) {\n    updatePost(id: $id, title: $title, text: $text) {\n      id\n      title\n      text\n      textSnippet\n    }\n  }\n"): (typeof documents)["\n  mutation UpdatePost($id: Int!, $title: String!, $text: String!) {\n    updatePost(id: $id, title: $title, text: $text) {\n      id\n      title\n      text\n      textSnippet\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

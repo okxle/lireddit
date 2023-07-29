@@ -166,7 +166,7 @@ export class PostResolver {
 
   @Query(() => Post, { nullable: true })
   post(@Arg("id", () => Int) id: number): Promise<Post | null> {
-    return Post.findOne({ where: { id }, relations: ["creator"]});
+    return Post.findOne({ where: { id }, relations: ["creator"] });
   }
 
   @Mutation(() => Post)
@@ -182,18 +182,24 @@ export class PostResolver {
   }
 
   @Mutation(() => Post, { nullable: true })
+  @UseMiddleware(isAuth)
   async updatePost(
-    @Arg("id") id: number,
-    @Arg("title", { nullable: true }) title: string
+    @Arg("id", () => Int) id: number,
+    @Arg("title") title: string,
+    @Arg("text") text: string,
+    @Ctx() { req }: MyContext
   ): Promise<Post | null> {
-    const post = await Post.findOne({ where: { id } });
-    if (!post) {
-      return null;
-    }
-    if (typeof title != "undefined") {
-      await Post.update({ id }, { title });
-    }
-    return post;
+    const results = await appDataSource
+      .createQueryBuilder()
+      .update(Post)
+      .set({ title, text })
+      .where('id = :id and "creatorId" = :creatorId', {
+        id,
+        creatorId: req.session.userId,
+      })
+      .returning("*")
+      .execute();
+    return results.raw[0];
   }
 
   @Mutation(() => Boolean)
@@ -203,7 +209,7 @@ export class PostResolver {
     @Ctx() { req }: MyContext
   ): Promise<boolean> {
     try {
-      await Post.delete({ id, creatorId: req.session.userId});
+      await Post.delete({ id, creatorId: req.session.userId });
     } catch (error) {
       return false;
     }

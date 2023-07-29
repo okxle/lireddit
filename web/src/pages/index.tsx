@@ -1,22 +1,14 @@
+import EditAndDeletePostButton from "@/components/EditAndDeletePostButton";
 import Layout from "@/components/Layout";
 import UpdootSection from "@/components/UpdootSection";
 import { graphql } from "@/generated";
+import { MeDocument } from "@/generated/graphql";
 import { createUqrlClient } from "@/utils/createUqrlClient";
-import { DeleteIcon } from "@chakra-ui/icons";
 import { Link } from "@chakra-ui/next-js";
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  IconButton,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
-import { NextPageContext } from "next";
-import { initUrqlClient, withUrqlClient } from "next-urql";
+import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
+import { withUrqlClient } from "next-urql";
 import { useState } from "react";
-import { ssrExchange, useMutation, useQuery } from "urql";
+import { useQuery } from "urql";
 
 const postsQuery = graphql(`
   query Posts($limit: Int!, $cursor: String) {
@@ -36,12 +28,6 @@ const postsQuery = graphql(`
         }
       }
     }
-  }
-`);
-
-const deletePostMutation = graphql(`
-  mutation DeletePost($id: Int!) {
-    deletePost(id: $id)
   }
 `);
 
@@ -69,8 +55,6 @@ function Home() {
     variables,
   });
 
-  const [, deletePost] = useMutation(deletePostMutation)
-
   if (!fetching && !data) {
     return <>You got no post for some reason</>;
   }
@@ -81,26 +65,25 @@ function Home() {
         {!data && fetching ? (
           <div>loading...</div>
         ) : (
-          data!.posts.posts.map((d) => !d ? null : (
-            <Flex key={d.id} p={5} shadow="md" borderWidth="1px">
-              <UpdootSection post={d} />
-              <Box flex={1}>
-                <Link href={`/post/${d.id}`}>
-                  <Heading fontSize="xl">{d.title}</Heading>
-                </Link>
-                <Text>posted by {d.creator.username}</Text>
-                <Flex align="center">
-                  <Text flex={1} mt={4}>{d.textSnippet}</Text>
-                  <IconButton
-                    colorScheme="red"
-                    icon={<DeleteIcon />}
-                    aria-label="delete post"
-                    onClick={() => deletePost({id: d.id})}
-                  />
-                </Flex>
-              </Box>
-            </Flex>
-          ))
+          data!.posts.posts.map((d) =>
+            !d ? null : (
+              <Flex key={d.id} p={5} shadow="md" borderWidth="1px">
+                <UpdootSection post={d} />
+                <Box flex={1}>
+                  <Link href={`/post/${d.id}`}>
+                    <Heading fontSize="xl">{d.title}</Heading>
+                  </Link>
+                  <Text>posted by {d.creator.username}</Text>
+                  <Flex align="center">
+                    <Text flex={1} mt={4}>
+                      {d.textSnippet}
+                    </Text>
+                    <EditAndDeletePostButton id={d.id} creatorId={d.creator.id} />
+                  </Flex>
+                </Box>
+              </Flex>
+            )
+          )
         )}
       </Stack>
       {data && data.posts.hasMore && (
