@@ -119,28 +119,23 @@ export class PostResolver {
     return userLoader.load(root.creatorId);
   }
 
+  @FieldResolver(() => Int, {nullable: true})
+  async voteStatus(@Root() root: Post, @Ctx() { updootLoader, req }: MyContext) {
+    if (!req.session.id) return null;
+    const updoot = await updootLoader.load({postId: root.id, userId: req.session.userId });
+    return updoot ? updoot.value : null;
+  }
+
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
-    @Ctx() { req }: MyContext
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(limit, 50);
     const realLimitPlusOne = realLimit + 1;
     const posts = await appDataSource.query(`
     select
-      p.*,
-    ${
-      req.session.userId
-        ? `(
-          select 
-          value 
-          from updoot 
-          where "userId" = ${req.session.userId} 
-          and "postId" = p.id
-        ) "voteStatus"`
-        : 'null as "voteStatus"'
-    }
+      p.*
     from
       "post" as p
     ${

@@ -13,6 +13,7 @@ import { MyContext } from "./types";
 import cors from "cors";
 import { appDataSource } from "./appDataSource";
 import { createUserLoader } from "./utils/createUserLoader";
+import { createUpdootLoader } from "./utils/createUpdootLoader";
 
 const isApolloSandBoxMode = false; // toggle this so can use in sandbox
 
@@ -71,6 +72,7 @@ const main = async () => {
       res,
       redis: redisClient,
       userLoader: createUserLoader(),
+      updootLoader: createUpdootLoader(),
     }),
   });
   await apolloServer.start();
