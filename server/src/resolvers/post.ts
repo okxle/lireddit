@@ -17,6 +17,7 @@ import { appDataSource } from "../appDataSource";
 import { Post } from "../entities/Post";
 import { isAuth } from "../middleware/isAuth";
 import { Updoot } from "../entities/Updoot";
+import { User } from "../entities/User";
 
 @InputType()
 class PostInput {
@@ -113,6 +114,11 @@ export class PostResolver {
     return root.text.slice(0, 50);
   }
 
+  @FieldResolver(() => User)
+  creator(@Root() root: Post, @Ctx() { userLoader }: MyContext) {
+    return userLoader.load(root.creatorId);
+  }
+
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
@@ -124,11 +130,6 @@ export class PostResolver {
     const posts = await appDataSource.query(`
     select
       p.*,
-      json_build_object(
-        'id', u.id,
-        'username', u.username,
-        'email', u.email
-      ) creator,
     ${
       req.session.userId
         ? `(
@@ -142,9 +143,6 @@ export class PostResolver {
     }
     from
       "post" as p
-    inner join "user" as u
-    on
-      p."creatorId" = u.id
     ${
       cursor
         ? `
@@ -166,7 +164,7 @@ export class PostResolver {
 
   @Query(() => Post, { nullable: true })
   post(@Arg("id", () => Int) id: number): Promise<Post | null> {
-    return Post.findOne({ where: { id }, relations: ["creator"] });
+    return Post.findOne({ where: { id } });
   }
 
   @Mutation(() => Post)

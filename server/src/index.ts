@@ -12,6 +12,7 @@ import Redis from "ioredis";
 import { MyContext } from "./types";
 import cors from "cors";
 import { appDataSource } from "./appDataSource";
+import { createUserLoader } from "./utils/createUserLoader";
 
 const isApolloSandBoxMode = false; // toggle this so can use in sandbox
 
@@ -21,17 +22,17 @@ const main = async () => {
   const app = express();
 
   let corsOrigin = "http://localhost:3000";
-  let cookieSecure = __prod__; 
+  let cookieSecure = __prod__;
   let cookieSameSite: "lax" | "none" = "lax";
   if (isApolloSandBoxMode) {
-    corsOrigin = "https://studio.apollographql.com"
+    corsOrigin = "https://studio.apollographql.com";
     cookieSecure = true;
     cookieSameSite = "none";
     app.set("trust proxy", true);
     app.set("Access-Control-Allow-Origin", corsOrigin);
     app.set("Access-Control-Allow-Credentials", true);
   }
-  
+
   app.use(
     cors({
       origin: corsOrigin,
@@ -65,7 +66,12 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({ req, res, redis: redisClient }),
+    context: ({ req, res }): MyContext => ({
+      req,
+      res,
+      redis: redisClient,
+      userLoader: createUserLoader(),
+    }),
   });
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: false });
