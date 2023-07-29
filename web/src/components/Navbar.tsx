@@ -4,6 +4,7 @@ import React from "react";
 import { graphql } from "@/generated";
 import { useMutation, useQuery } from "urql";
 import isServer from "@/utils/isServer";
+import { useRouter } from "next/router";
 
 const meQuery = graphql(`
   query Me {
@@ -23,6 +24,7 @@ const logoutMutation = graphql(`
 type Props = {};
 
 const Navbar = (props: Props) => {
+  const router = useRouter();
   const [{ data, fetching }] = useQuery({
     query: meQuery,
   });
@@ -47,8 +49,9 @@ const Navbar = (props: Props) => {
         </Button>
         <Box mr={2}>{data.me.username}</Box>
         <Button
-          onClick={() => {
-            logout({});
+          onClick={async () => {
+            await logout({});
+            router.reload();
           }}
           isLoading={logoutFetching}
           variant="link"

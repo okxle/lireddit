@@ -8,15 +8,15 @@ import {
   VoteMutationVariables,
 } from "@/generated/graphql";
 import { betterUpdateQuery } from "@/utils/betterUpdateQuery";
+import { gql } from "@urql/core";
 import { devtoolsExchange } from "@urql/devtools";
 import {
-  Resolver,
-  cacheExchange as cacheExchangeURL,
+  cacheExchange as cacheExchangeURL
 } from "@urql/exchange-graphcache";
 import Router from "next/router";
 import { errorExchange, fetchExchange } from "urql";
-import { gql } from "@urql/core";
 import { cursorPagination } from "./cursorPagination";
+import { invalidateAllPost } from "./invalidateAllPost";
 import isServer from "./isServer";
 
 export const createUqrlClient = (ssrExchange: any, ctx: any) => {
@@ -74,15 +74,7 @@ export const createUqrlClient = (ssrExchange: any, ctx: any) => {
             }
           },
           createPost: (_result: any, args, cache, info) => {
-            // console.log(cache.inspectFields("Query"))
-            const allFields = cache.inspectFields("Query");
-            const fieldInfos = allFields.filter(
-              (info) => info.fieldName === "posts"
-            );
-            fieldInfos.forEach((fieldInfo) => {
-              cache.invalidate("Query", "posts", fieldInfo.arguments || {});
-            });
-            // console.log(cache.inspectFields("Query"))
+            invalidateAllPost(cache);
           },
           login: (_result: any, args, cache, info) => {
             // cache.updateQuery({query: MeDocument}, (query) => {
@@ -98,6 +90,7 @@ export const createUqrlClient = (ssrExchange: any, ctx: any) => {
                 return { me: result.login.user };
               }
             );
+            invalidateAllPost(cache);
           },
           register: (_result, args, cache, info) => {
             betterUpdateQuery<RegisterMutation, MeQuery>(
