@@ -1,6 +1,5 @@
 import DataLoader from "dataloader";
 import { Updoot } from "../entities/Updoot";
-import { In } from "typeorm";
 
 export const createUpdootLoader = () => new DataLoader<
   { postId: number; userId: number },

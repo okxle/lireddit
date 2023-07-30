@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import "dotenv-safe/config";
 import { __prod__ } from "./constants";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -22,7 +23,7 @@ const main = async () => {
 
   const app = express();
 
-  let corsOrigin = "http://localhost:3000";
+  let corsOrigin = process.env.CORS_ORIGIN;
   let cookieSecure = __prod__;
   let cookieSameSite: "lax" | "none" = "lax";
   if (isApolloSandBoxMode) {
@@ -41,7 +42,7 @@ const main = async () => {
     })
   );
 
-  const redisClient = new Redis();
+  const redisClient = new Redis(process.env.REDIS_URL);
   const redisStore = new RedisStore({
     client: redisClient,
     disableTouch: true,
@@ -52,7 +53,7 @@ const main = async () => {
       store: redisStore,
       resave: false, // required: force lightweight session keep alive (touch)
       saveUninitialized: false, // recommended: only save session when data exists
-      secret: "keyboard cat",
+      secret: process.env.SESSION_SECRET,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
         httpOnly: true, // prevent front end to access
@@ -78,7 +79,7 @@ const main = async () => {
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, cors: false });
 
-  app.listen(4000, () => {
+  app.listen(parseInt(process.env.PORT), () => {
     console.log("server started in localhost 4000");
   });
 };
